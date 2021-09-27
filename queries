@@ -1,0 +1,111 @@
+
+Query realizada desde la base de datos de compras
+
+Q1 = [{'$match': {'cliente.nombre': 'Javier'}},
+      {'$project':
+           {'producto.nombre': 1,
+            'cliente.nombre': 1,
+            'direccion_de_envio': 1,
+            'fecha_de_compra': 1,
+            'precio_de_compra': 1}}]
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Query realizada de la base de datos de  proveedores
+
+Q2 = [{'$lookup': {'from': 'productos', 'localField': 'codigo', 'foreignField': 'proveedor.codigo', 'as': 'prod'}},
+      {'$unwind': '$codigo'},
+      {'$match': {'prod.nombre': 'iphone 8'}},
+      {'$project':
+           {'_id': '$_id',
+            'nombre': '$nombre',
+            'direcciones_almacenes': '$direcciones_almacenes',
+            'codigo': '$codigo'}}]
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Query realizada de la base de datos de  productos
+
+Q3 = [{'$lookup': {'from': 'compras', 'localField': 'nombre', 'foreignField': 'producto.nombre', 'as': 'productos'}},
+      {'$unwind': '$productos'},
+      {'$match': {'productos.cliente.nombre': 'Javier'}},
+      {'$project': {'productos': 0}},
+      {'$group':
+           {'_id': '$_id',
+            'nombre': {'$first': '$nombre'},
+            'proveedor': {'$first': '$proveedor.nombre'},
+            'precio_sin_iva': {'$first': '$precio_sin_iva'},
+            'descuento_por_rango_de_fechas': {'$first': '$descuento_por_rango_de_fechas'},
+            'dimensiones': {'$first': '$dimensiones'}, 'peso': {'$first': '$peso'}}}]
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Query realizada desde la base de datos de compras
+
+Q4 = [{'$match':
+           {'$and': [{'fecha_de_compra': '2018-02-02T00:00:00.000Z'}, {'cliente.nombre': 'Javier'}]}},
+      {'$project':
+           {'fecha_de_compra': 1,
+            'cliente.nombre': 1,
+            'peso_total': {'$sum': '$producto.peso'}
+               , 'volumen_total': {'$sum': {'$multiply': ['$producto.dimensiones.Altura'
+               , '$producto.dimensiones.Anchura',
+                                                          '$producto.dimensiones.Profundidad']}}}},
+      {'$group':
+           {'_id': "$_id",
+            'producto': {'$first': '$producto.nombre'},
+            'cliente': {'$first': '$cliente.nombre'},
+            'precio_de_compra': {'$first': '$producto.precio_de_compra'},
+            'fecha_de_compra': {'$first': '$producto.fecha_de_compra'},
+            'direccion_de_envio': {'$first': '$cliente.direccion_de_envio'},
+            'peso_total': {'$sum': '$peso_total'},
+            'volumen_total': {'$sum': '$volumen_total'},
+            'numero_compras': {'$sum': 1}}}]
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Query realizada desde la base de datos de compras
+
+Q6 = [{'$group':
+           {'_id': '$producto.proveedores_almacen.nombre',
+            'count': {'$sum': 1},
+            'volumen_facturacion':
+                {'$sum':
+                     {'$sum': ['$producto.precio_con_iva',
+                               '$producto.coste_de_envio']}}}},
+      {'$lookup': {'from': 'proveedores',
+                   'localField': '_id',
+                   'foreignField': 'direcciones_almacenes.direccion.nombre',
+                   'as': 'proveedor'}},
+      {'$unwind': '$proveedor'},
+      {'$group': {'_id': '$proveedor',
+                  'volumen_facturacion': {'$sum': '$volumen_facturacion'},
+                  'producto': {'$first': '$producto.nombre'},
+                  'cliente': {'$first': '$cliente.nombre'},
+                  'precio_de_compra': {'$first': '$producto.precio_de_compra'},
+                  'fecha_de_compra': {'$first': '$fecha_de_compra'},
+                  'direccion_de_envio': {'$first': '$direccion_de_envio'}}},
+      {'$sort': {'volumen_facturacion': -1}},
+      {'$limit': 3}]
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Query realizada desde la base de datos de proveedores
+
+Q7 = [{'$geoNear': {'near': {'type': 'Point',
+                             'coordinates': [-3.7, 40, 41]},
+                    'spherical': 1,
+                    'distanceField': 'distancia_diferencia',
+                    'maxDistance': 100000}},
+      {'$sort': {'distancia_diferencia': 1}}]
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Query realizada desde la base de datos de compras
+
+Q8 = [{'$match': {'direccion_de_envio.coordinates': {'$geoWithin': {'$geometry'
+                                                                    : {'type': 'Polygon',
+                                                                       'coordinates': [[[-3.67202335, 40.4097376],
+                                                                                        [-3.67246794310811, 40.4108392],
+                                                                                        [-3.6742479, 40.4094157],
+                                                                                        [-3.67202335,
