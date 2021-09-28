@@ -1,2 +1,2 @@
 # MongoDB_LocalStore
-Proyecto Local Store realizado en python con MondoDB
+Proyecto Local Store realizado en Python con MondoDB
