@@ -11,7 +11,7 @@ Q1 = [{'$match': {'cliente.nombre': 'Javier'}},
 
 -----------------------------------------------------------------------------------------------------------------------------
 
-Query realizada de la base de datos de  proveedores
+Query realizada de la base de datos de proveedores
 
 Q2 = [{'$lookup': {'from': 'productos', 'localField': 'codigo', 'foreignField': 'proveedor.codigo', 'as': 'prod'}},
       {'$unwind': '$codigo'},
