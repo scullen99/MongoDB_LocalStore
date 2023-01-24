@@ -1,4 +1,4 @@
-__author__ = 'Sergio Esteban'
+__author__ = 'Sergio Esteban Tarrero'
 
 from pymongo import MongoClient
 from geopy.geocoders import Nominatim
